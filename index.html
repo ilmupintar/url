@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Compress</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#fbfaf7;color:#111;overflow-x:hidden}
+.mono{font-family:'JetBrains Mono',monospace}
+header{max-width:1100px;margin:0 auto;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}
+.logo b{background:#111;color:#fff;padding:6px 12px;border-radius:9px;font-weight:800;font-size:20px;letter-spacing:-0.5px}
+.header-by{font-size:11px;color:#111;opacity:0.65;font-weight:600;letter-spacing:0.2px}
+.wrap{max-width:740px;margin:0 auto;padding:18px 24px 0;text-align:center}
+h1{font-size:clamp(36px,6vw,64px);font-weight:800;line-height:0.9;letter-spacing:-3px;color:#111}
+h1 .by-premium{
+  font-weight:500;
+  font-size:17px;
+  color:#111;
+  opacity:0.75;
+  display:block;
+  margin-top:12px;
+  line-height:1.4;
+  letter-spacing:-0.2px;
+}
+.card{margin-top:28px;background:#fff;border:1px solid #ece9e2;border-radius:24px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.06);text-align:left}
+.engine{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.eng{border:1.5px solid #ece9e2;background:#fbfaf7;border-radius:12px;padding:11px 12px;cursor:pointer;transition:.2s}
+.eng.active{border-color:#111;background:#111;color:#fff}
+.eng b{font-size:10px;display:block;letter-spacing:0.3px}
+.eng span{font-size:9px;color:#777;margin-top:3px;display:block}
+.eng.active span{color:#aaa}
+.input-row{display:flex;gap:10px}
+.input-row input{flex:1;background:#f6f4ef;border:1.5px solid transparent;border-radius:14px;padding:18px;font-size:15px;font-weight:500;outline:none;min-width:0;transition:.2s}
+.input-row input:focus{background:#fff;border-color:#111}
+.btn{border:none;border-radius:14px;font-weight:700;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif}
+.btn-black{background:#111;color:#fff;height:56px;padding:0 24px;white-space:nowrap}
+.btn-black:disabled{opacity:.5}
+.status{margin:12px 6px 2px;font-size:11px;color:#888;min-height:16px}
+.status.err{color:#d93025}
+.result{display:none;margin-top:10px;background:#111;border-radius:20px;padding:20px}
+.result.show{display:block}
+.short{color:#fff;font-size:15px;font-weight:700;word-break:break-all;line-height:1.3}
+.long{color:#666;font-size:11px;margin-top:8px;word-break:break-all}
+.actions{display:flex;gap:8px;margin-top:16px}
+.btn-white{background:#fff;color:#111;padding:13px 18px;font-size:13px;flex:1}
+.btn-white.copied{background:#d6ff00!important}
+.btn-lime{background:#d6ff00;color:#111;padding:13px 18px;font-size:13px;flex:1}
+.qr-box{margin-top:16px;background:#1a1a1a;border-radius:16px;padding:16px;display:flex;gap:16px;align-items:center}
+.qr-box img{width:110px;height:110px;background:#fff;border-radius:12px;padding:6px}
+.history{max-width:740px;margin:30px auto;padding:0 24px 80px;text-align:left}
+.item{background:#fff;border:1px solid #ece9e2;border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+@media(max-width:600px){.engine{grid-template-columns:1fr}.input-row{flex-direction:column}.btn-black{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><b>FREE</b></div>
+  <div class="header-by mono">By Adityaa Rahman</div>
+</header>
+<div class="wrap">
+  <h1>PREMIUM CLOUD
+    <span class="by-premium">By Adityaa Rahman</span>
+  </h1>
+  <div class="card">
+    <div class="engine mono">
+      <div class="eng active" id="e1" onclick="setE('clck')"><b>LANGSUNG MASUK LINK</b><span></span></div>
+      <div class="eng" id="e2" onclick="setE('sec')"><b>MELEWATI SECURITY</b><span></span></div>
+      <div class="eng" id="e3" onclick="setE('exe')"><b>MELEWATI LINK DENGAN RINTANGAN</b><span></span></div>
+    </div>
+    <div class="input-row">
+      <input id="urlInput" placeholder="Masukan Link Url">
+      <button id="btn" class="btn btn-black" onclick="compress()">Click Compress</button>
+    </div>
+    <div id="status" class="status mono"></div>
+    <div id="result" class="result">
+      <div class="mono" style="color:#777;font-size:10px;margin-bottom:8px;letter-spacing:1px">LINK PENDEK AKTIF • <span id="ml" style="color:#d6ff00"></span></div>
+      <div id="shortUrl" class="short mono"></div>
+      <div id="longUrl" class="long mono"></div>
+      <div class="actions">
+        <button id="copyBtn" class="btn btn-white mono" onclick="copyText()">COPY LINK</button>
+        <button id="qrBtn" class="btn btn-lime mono" onclick="downloadQR()">Unduh QR</button>
+      </div>
+      <div class="qr-box">
+        <img id="qrImg" src="">
+        <div style="flex:1;text-align:left">
+          <b class="mono" style="color:#fff;font-size:13px;display:block;margin-bottom:4px">QR CODE SIAP SCAN</b>
+          <p class="mono" id="qrLink" style="color:#d6ff00;word-break:break-all;font-size:11px"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="history">
+  <div style="display:flex;justify-content:space-between;margin-bottom:12px"><h3 class="mono" style="font-size:12px">HISTORY • <span id="count">0</span></h3><button onclick="clearAll()" style="background:none;border:none;font-size:11px;color:#999;text-decoration:underline" class="mono">hapus semua</button></div>
+  <div id="list"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let db=JSON.parse(localStorage.getItem('uc_v3')||'[]');
+let currentShort='', mode='clck';
+const EXEIO_KEY='ISI_API_KEY_EXEIO_LU_DISINI';
+function setE(m){
+  mode=m;
+  document.querySelectorAll('.eng').forEach(x=>x.classList.remove('active'));
+  $('e'+(m==='clck'?1:m==='sec'?2:3)).classList.add('active');
+  $('status').textContent = m==='clck'?'Mode: LANGSUNG MASUK LINK':m==='sec'?'Mode: MELEWATI SECURITY':'Mode: MELEWATI LINK DENGAN RINTANGAN';
+}
+function validUrl(s){ try{let u=new URL(s.startsWith('http')?s:'https://'+s);return u.href}catch{return null} }
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.top='-100px';
+  document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,99999);
+  let ok=false; try{ ok=document.execCommand('copy'); }catch{} document.body.removeChild(ta); return ok;
+}
+async function doCopy(text){
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; } }catch{}
+  return fallbackCopy(text);
+}
+async function copyText(){
+  const text=$('shortUrl').textContent.trim(); if(!text) return;
+  const btn=$('copyBtn');
+  const ok=await doCopy(text);
+  if(ok){ btn.textContent='✓ TERSALIN!'; btn.classList.add('copied'); setTimeout(()=>{ btn.textContent='COPY LINK'; btn.classList.remove('copied'); },2000); }
+  else{ prompt('Copy manual:', text); }
+}
+async function copyFromHistory(text, el){
+  const ok=await doCopy(text);
+  if(ok){ el.textContent='✓'; setTimeout(()=>el.textContent='COPY',1500); }
+}
+async function compress(){
+  const long=validUrl($('urlInput').value.trim());
+  if(!long){ $('status').textContent='URL tidak valid'; $('status').className='status err mono'; return; }
+  $('btn').disabled=true; $('btn').textContent='Proses...'; $('result').classList.remove('show');
+  let short=null;
+  try{
+    if(mode==='clck'){
+      const r=await fetch(`https://clck.ru/--?url=${encodeURIComponent(long)}`); const t=await r.text(); if(t.includes('clck.ru')) short=t.trim();
+      if(!short){ const rp=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://clck.ru/--?url='+encodeURIComponent(long))}`); const tp=await rp.text(); if(tp.includes('clck.ru')) short=tp.trim(); }
+    }else if(mode==='sec'){
+      const r=await fetch('https://cleanuri.com/api/v1/shorten',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:`url=${encodeURIComponent(long)}`}); const j=await r.json(); short=j.result_url;
+    }else if(mode==='exe'){
+      const r=await fetch(`https://exe.io/api?api=${EXEIO_KEY}&url=${encodeURIComponent(long)}`); const t=await r.text(); if(t.startsWith('http')) short=t.trim();
+      if(!short){ const r2=await fetch(`https://clck.ru/--?url=${encodeURIComponent(long)}`); const t2=await r2.text(); short=t2.trim(); }
+    }
+  }catch{}
+  $('btn').disabled=false; $('btn').textContent='Click Compress';
+  if(!short){ $('status').textContent='Gagal, coba ganti mode'; $('status').className='status err mono'; return; }
+  currentShort=short; $('shortUrl').textContent=short; $('longUrl').textContent=long.length>80?long.slice(0,80)+'...':long; $('ml').textContent=mode.toUpperCase(); $('qrImg').src=`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(short)}&bgcolor=ffffff`; $('qrLink').textContent=short; $('result').classList.add('show'); $('status').textContent='Berhasil!';
+  db.unshift({short,long}); db=db.slice(0,20); localStorage.setItem('uc_v3',JSON.stringify(db)); render();
+}
+function render(){ $('count').textContent=db.length; const list=$('list'); if(!db.length){ list.innerHTML='<div style="text-align:center;padding:20px;border:1px dashed #ddd;border-radius:14px;color:#aaa" class="mono">Belum ada history</div>'; return; } list.innerHTML=db.map(o=>`<div class="item"><div style="min-width:0;flex:1"><div class="mono" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.long}</div><div class="mono" style="margin-top:6px;background:#f6f4ef;display:inline-block;padding:4px 8px;border-radius:8px;font-size:11px">${o.short}</div></div><button class="btn btn-white mono" style="padding:8px 12px;border:1px solid #eee;font-size:11px" onclick="copyFromHistory('${o.short}', this)">COPY</button></div>`).join(''); }
+function clearAll(){ if(confirm('Hapus semua?')){ db=[]; localStorage.removeItem('uc_v3'); render(); } }
+
+// FIX QR DOWNLOAD BERKALI-KALI - BISA DOWNLOAD UNLIMITED
+async function downloadQR(){
+  if(!currentShort) return;
+  const btn=document.getElementById('qrBtn');
+  const oldText=btn.textContent;
+  btn.textContent='Mengunduh...';
+  try{
+    const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(currentShort)}&bgcolor=ffffff&cache=${Date.now()}`;
+    const res=await fetch(qrUrl, {cache:'no-store'});
+    const blob=await res.blob();
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.style.display='none';
+    a.href=blobUrl;
+    a.download=`QR-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{
+      try{ document.body.removeChild(a); }catch{}
+      URL.revokeObjectURL(blobUrl);
+    }, 2500);
+    btn.textContent='✓ Terunduh!';
+  }catch(e){
+    const a=document.createElement('a');
+    a.href=`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(currentShort)}&bgcolor=ffffff`;
+    a.target='_blank';
+    a.download=`QR-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ try{a.remove()}catch{} }, 500);
+  }
+  setTimeout(()=>{ btn.textContent=oldText; }, 1500);
+}
+$('urlInput').addEventListener('keydown',e=>{ if(e.key==='Enter') compress(); });
+render();
+</script>
+</body>
+  </html>
