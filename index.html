@@ -14,16 +14,7 @@ header{max-width:1100px;margin:0 auto;padding:20px 24px;display:flex;justify-con
 .header-by{font-size:11px;color:#111;opacity:0.65;font-weight:600;letter-spacing:0.2px}
 .wrap{max-width:740px;margin:0 auto;padding:18px 24px 0;text-align:center}
 h1{font-size:clamp(36px,6vw,64px);font-weight:800;line-height:0.9;letter-spacing:-3px;color:#111}
-h1 .by-premium{
-  font-weight:500;
-  font-size:17px;
-  color:#111;
-  opacity:0.75;
-  display:block;
-  margin-top:12px;
-  line-height:1.4;
-  letter-spacing:-0.2px;
-}
+h1 .by-premium{font-weight:500;font-size:17px;color:#111;opacity:0.75;display:block;margin-top:12px;line-height:1.4;letter-spacing:-0.2px}
 .card{margin-top:28px;background:#fff;border:1px solid #ece9e2;border-radius:24px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.06);text-align:left}
 .engine{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .eng{border:1.5px solid #ece9e2;background:#fbfaf7;border-radius:12px;padding:11px 12px;cursor:pointer;transition:.2s}
@@ -67,7 +58,7 @@ h1 .by-premium{
     <div class="engine mono">
       <div class="eng active" id="e1" onclick="setE('clck')"><b>LANGSUNG MASUK LINK</b><span></span></div>
       <div class="eng" id="e2" onclick="setE('sec')"><b>MELEWATI SECURITY</b><span></span></div>
-      <div class="eng" id="e3" onclick="setE('exe')"><b>MELEWATI LINK DENGAN RINTANGAN</b><span></span></div>
+      <div class="eng" id="e3" onclick="setE('ouo')"><b>MELEWATI LINK DENGAN RINTANGAN</b><span>ouo.io</span></div>
     </div>
     <div class="input-row">
       <input id="urlInput" placeholder="Masukan Link Url">
@@ -100,12 +91,15 @@ h1 .by-premium{
 const $=id=>document.getElementById(id);
 let db=JSON.parse(localStorage.getItem('uc_v3')||'[]');
 let currentShort='', mode='clck';
-const EXEIO_KEY='ISI_API_KEY_EXEIO_LU_DISINI';
+
+// GANTI INI PAKAI API KEY OUO.IO LU
+const OUO_API_KEY='ISI_API_KEY_OUO_IO_LU_DISINI';
+
 function setE(m){
   mode=m;
   document.querySelectorAll('.eng').forEach(x=>x.classList.remove('active'));
   $('e'+(m==='clck'?1:m==='sec'?2:3)).classList.add('active');
-  $('status').textContent = m==='clck'?'Mode: LANGSUNG MASUK LINK':m==='sec'?'Mode: MELEWATI SECURITY':'Mode: MELEWATI LINK DENGAN RINTANGAN';
+  $('status').textContent = m==='clck'?'Mode: LANGSUNG MASUK LINK (clck.ru)':m==='sec'?'Mode: MELEWATI SECURITY (cleanuri)':'Mode: OUO.IO - ADA RINTANGAN 5 DETIK';
 }
 function validUrl(s){ try{let u=new URL(s.startsWith('http')?s:'https://'+s);return u.href}catch{return null} }
 function fallbackCopy(text){
@@ -140,20 +134,23 @@ async function compress(){
       if(!short){ const rp=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://clck.ru/--?url='+encodeURIComponent(long))}`); const tp=await rp.text(); if(tp.includes('clck.ru')) short=tp.trim(); }
     }else if(mode==='sec'){
       const r=await fetch('https://cleanuri.com/api/v1/shorten',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:`url=${encodeURIComponent(long)}`}); const j=await r.json(); short=j.result_url;
-    }else if(mode==='exe'){
-      const r=await fetch(`https://exe.io/api?api=${EXEIO_KEY}&url=${encodeURIComponent(long)}`); const t=await r.text(); if(t.startsWith('http')) short=t.trim();
-      if(!short){ const r2=await fetch(`https://clck.ru/--?url=${encodeURIComponent(long)}`); const t2=await r2.text(); short=t2.trim(); }
+    }else if(mode==='ouo'){
+      // OUO.IO - ADA RINTANGAN
+      if(!OUO_API_KEY || OUO_API_KEY.includes('ISI_API')){
+        $('status').textContent='Isi dulu API Key ouo.io di script!'; $('status').className='status err mono'; throw 'no key';
+      }
+      const r=await fetch(`https://ouo.io/api/${OUO_API_KEY}?s=${encodeURIComponent(long)}`);
+      const t=await r.text();
+      if(t.startsWith('http') && t.includes('ouo.io')) short=t.trim();
     }
   }catch{}
   $('btn').disabled=false; $('btn').textContent='Click Compress';
-  if(!short){ $('status').textContent='Gagal, coba ganti mode'; $('status').className='status err mono'; return; }
-  currentShort=short; $('shortUrl').textContent=short; $('longUrl').textContent=long.length>80?long.slice(0,80)+'...':long; $('ml').textContent=mode.toUpperCase(); $('qrImg').src=`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(short)}&bgcolor=ffffff`; $('qrLink').textContent=short; $('result').classList.add('show'); $('status').textContent='Berhasil!';
+  if(!short){ $('status').textContent='Gagal, coba ganti mode / cek API Key'; $('status').className='status err mono'; return; }
+  currentShort=short; $('shortUrl').textContent=short; $('longUrl').textContent=long.length>80?long.slice(0,80)+'...':long; $('ml').textContent=mode.toUpperCase(); $('qrImg').src=`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(short)}&bgcolor=ffffff`; $('qrLink').textContent=short; $('result').classList.add('show'); $('status').textContent='Berhasil! Link ada rintangan';
   db.unshift({short,long}); db=db.slice(0,20); localStorage.setItem('uc_v3',JSON.stringify(db)); render();
 }
 function render(){ $('count').textContent=db.length; const list=$('list'); if(!db.length){ list.innerHTML='<div style="text-align:center;padding:20px;border:1px dashed #ddd;border-radius:14px;color:#aaa" class="mono">Belum ada history</div>'; return; } list.innerHTML=db.map(o=>`<div class="item"><div style="min-width:0;flex:1"><div class="mono" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.long}</div><div class="mono" style="margin-top:6px;background:#f6f4ef;display:inline-block;padding:4px 8px;border-radius:8px;font-size:11px">${o.short}</div></div><button class="btn btn-white mono" style="padding:8px 12px;border:1px solid #eee;font-size:11px" onclick="copyFromHistory('${o.short}', this)">COPY</button></div>`).join(''); }
 function clearAll(){ if(confirm('Hapus semua?')){ db=[]; localStorage.removeItem('uc_v3'); render(); } }
-
-// FIX QR DOWNLOAD BERKALI-KALI - BISA DOWNLOAD UNLIMITED
 async function downloadQR(){
   if(!currentShort) return;
   const btn=document.getElementById('qrBtn');
@@ -170,10 +167,7 @@ async function downloadQR(){
     a.download=`QR-${Date.now()}.png`;
     document.body.appendChild(a);
     a.click();
-    setTimeout(()=>{
-      try{ document.body.removeChild(a); }catch{}
-      URL.revokeObjectURL(blobUrl);
-    }, 2500);
+    setTimeout(()=>{ try{ document.body.removeChild(a); }catch{} URL.revokeObjectURL(blobUrl); }, 2500);
     btn.textContent='✓ Terunduh!';
   }catch(e){
     const a=document.createElement('a');
